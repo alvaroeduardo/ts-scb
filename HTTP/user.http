@@ -1,0 +1,10 @@
+# @name Create-a-new-user
+POST http://localhost:3333/user
+Content-Type: application/json
+
+{
+    "email": "alvaroedusilva@yahoo.com", 
+    "name": "Álvaro Eduardo Silva", 
+    "password": "123456789", 
+    "role": "Administrator"
+}
