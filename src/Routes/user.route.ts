@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../Utils/prisma'
 import * as jwt from 'jsonwebtoken'
 import { decryptedPassword, encryptPassword } from '../Utils/hash'
+import { auth } from '../Utils/auth'
 
 export async function userRoute(app: FastifyInstance) {
     app.post('/login', async (req, reply) => {
@@ -27,9 +28,9 @@ export async function userRoute(app: FastifyInstance) {
             const passwordCheck = decryptedPassword(existingUser.password, atob(password))
 
             if (passwordCheck) {
-                const privateKey = "ew0KICAibmFtZSI6ICJ0cy1zY2IiLA0KICAidmVyc2lvbiI6ICIxLjAuMCIsDQogICJkZXNjcmlwdGlvbiI6ICJTaXN0ZW1hIGRlIENvbnRyb2xlIGRlIEJpYmxpb3RlY2FzIChCQUNLLUVORCkiLA0KICAiYXV0aG9yIjogIsOBbHZhcm8gRWR1YXJkbyBTaWx2YSIsDQogICJsaWNlbnNlIjogIk1JVCINCn0="
+                const privateKey = process.env.PRIVATE_KEY
 
-                const token = jwt.sign({ data: existingUser }, privateKey, { expiresIn: '24h' })
+                const token = jwt.sign({ data: existingUser }, privateKey!, { expiresIn: '24h' })
 
                 return reply.status(200).send({
                     message: `Logged in successfully. Welcome ${existingUser.name}`,
@@ -49,7 +50,7 @@ export async function userRoute(app: FastifyInstance) {
         }
     })
 
-    app.post('/user', async (req, reply) => {
+    app.post('/user', {preHandler: auth}, async (req, reply) => {
         const bodyParser = z.object({
             name: z.string(),
             role: z.string(),
@@ -93,7 +94,7 @@ export async function userRoute(app: FastifyInstance) {
         }
     })
 
-    app.get('/user/all', async (req, reply) => {
+    app.get('/user/all', {preHandler: auth}, async (req, reply) => {
         const users = await prisma.user.findMany()
 
         return reply.status(200).send({
@@ -101,7 +102,7 @@ export async function userRoute(app: FastifyInstance) {
         })
     })
 
-    app.get('/user/:id', async (req, reply) => {
+    app.get('/user/:id', {preHandler: auth}, async (req, reply) => {
         const paramsSchema = z.object({
             id: z.string().uuid()
         })
@@ -126,7 +127,7 @@ export async function userRoute(app: FastifyInstance) {
         }
     })
 
-    app.put('/user/update/:id', async (req, reply) => {
+    app.put('/user/update/:id', {preHandler: auth}, async (req, reply) => {
         const paramsSchema = z.object({
             id: z.string().uuid()
         })
@@ -180,7 +181,7 @@ export async function userRoute(app: FastifyInstance) {
         }
     })
 
-    app.delete('/user/delete/:id', async (req, reply) => {
+    app.delete('/user/delete/:id', {preHandler: auth}, async (req, reply) => {
         const paramsSchema = z.object({
             id: z.string().uuid()
         })

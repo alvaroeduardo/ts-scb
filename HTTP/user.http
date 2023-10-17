@@ -1,6 +1,11 @@
+@authToken = Bearer {{Login.response.body.token}}
+
+###
+
 # @name Create-a-new-user
 POST http://localhost:3333/user
 Content-Type: application/json
+Authorization: {{authToken}}
 
 {
     "email": "alvaroedusilva@yahoo.com", 
